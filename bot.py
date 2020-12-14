@@ -6,7 +6,7 @@ import dbmanage as db
 class Bot:
     def __init__(self):
         self.goodbye = ["do zobaczenia", "do widzenia"]
-        self.chatbot = ChatBot('Harold Fit')
+        self.chatbot = ChatBot('Harold Fit', database_uri='sqlite:///fit.db')
         self.train()
         self.db_manager = db.DBManager()
 
