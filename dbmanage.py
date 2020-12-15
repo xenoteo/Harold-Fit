@@ -13,7 +13,8 @@ class DBManager:
         self.INSTRUCTORS_MAP = {}   # unidecoded -> not unidecoded (with polish letters)
         self.INSTRUCTORS_UNIDECODED = []    # array of all the instructors (without polish letters)
         self.DAYS_OF_WEEK_MAP = {}  # unidecoded -> not unidecoded (with polish letters)
-        self.DAYS_OF_WEEK_UNIDECODED = []   # array of all the days of week (without polish letters)
+        # array of all the days of week (without polish letters), polish variations is taken into account
+        self.DAYS_OF_WEEK_UNIDECODED = []
         self.DESCRIPTIONS_MAP = {}  # unidecoded -> not unidecoded (with polish letters)
         self.DESCRIPTIONS_UNIDECODED = []   # array of all the descriptions (without polish letters)
 
@@ -72,6 +73,11 @@ class DBManager:
 
         days_of_week = ["poniedziałek", "wtorek", "środa", "czwartek", "piątek", "sobota", "niedziela"]
         self.set_map_and_unidecoded(days_of_week, self.DAYS_OF_WEEK_UNIDECODED, self.DAYS_OF_WEEK_MAP)
+        self.DAYS_OF_WEEK_UNIDECODED.extend(["srode", "sobote", "niedziele", "poniedzialki", "wtorki", "srody",
+                                             "czwartki", "piatki", "soboty"])
+        self.DAYS_OF_WEEK_MAP.update({"srode": "środa", "sobote": "sobota", "niedziele": "niedziela",
+                                  "poniedzialki": "poniedziałek", "wtorki": "wtorek", "srody": "środa",
+                                  "czwartki": "czwartek", "piatki": "piątek", "soboty": "sobota"})
 
     def set_all_descriptions(self):
         """
