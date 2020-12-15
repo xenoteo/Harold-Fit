@@ -7,9 +7,17 @@ from unidecode import unidecode
 
 class Bot:
     def __init__(self):
-        self.GOODBYE = ["do zobaczenia", "do widzenia"]
+        self.GOODBYE = ["do zobaczenia", "do widzenia", "pozdrawiam"]
         self.HELP = ["help", "pomocy", "pomoz"]
         self.SCHEDULE = ["grafik", "harmonogram", "kalendarz"]
+        self.HELLO_STRING = "\nWitam! Jestem botem i nazywam się Harold Fit. Mam przyjemność pomagać klientom " \
+                            "z harmonogramem zajęć fitnesowych :)\n" \
+                            "Między innymi mogę znaleźć zajęcia wybranego instruktora, w wybranym dniu, wybranego typu " \
+                            "albo dopasować trening do Twoich wymagań ;)\n" \
+                            "Serdecznie zapraszam do dialogu!"
+        self.HELP_STRING = "Nazywam się Harold Fit i mam przyjemność pomagać klientom z harmonogramem zajęć fitnesowych :)\n" \
+                           "Między innymi mogę znaleźć zajęcia wybranego instruktora, w wybranym dniu, wybranego typu " \
+                           "albo dopasować trening do Twoich wymagań ;)"
         self.chatbot = ChatBot('Harold Fit', database_uri='sqlite:///fit.db')
         self.train()
         self.db_manager = db.DBManager()
@@ -21,43 +29,28 @@ class Bot:
         trainer.train("corpus.goodbye")
         trainer.train("corpus.thank-you")
 
-    def is_goodbye(self, request):
-        if request in self.GOODBYE:
+    def belongs_to_category(self, request, category):
+        if request in category:
             return True
-        for goodbye in self.GOODBYE:
-            if request.__contains__(goodbye):
+        for word in category:
+            if request.__contains__(word):
                 return True
         return False
+
+    def is_goodbye(self, request):
+        return self.belongs_to_category(request, self.GOODBYE)
 
     def is_help(self, request):
-        if request in self.HELP:
-            return True
-        for word in self.HELP:
-            if request.__contains__(word):
-                return True
-        return False
+        return self.belongs_to_category(request, self.HELP)
 
     def is_schedule(self, request):
-        if request in self.SCHEDULE:
-            return True
-        for word in self.SCHEDULE:
-            if request.__contains__(word):
-                return True
-        return False
-
-    def print_help(self):
-        print("Nazywam się Harold Fit i mam przyjemność pomagać klientom z harmonogramem zajęć fitnesowych :)\n"
-              "Między innymi mogę znaleźć zajęcia wybranego instruktora, w wybranym dniu, wybranego typu "
-              "albo dopasować trening do Twoich wymagań ;)")
+        return self.belongs_to_category(request, self.SCHEDULE)
 
     def run(self):
-        print("\nWitam! Jestem botem i nazywam się Harold Fit. Mam przyjemność pomagać klientom "
-              "z harmonogramem zajęć fitnesowych :)\n"
-              "Między innymi mogę znaleźć zajęcia wybranego instruktora, w wybranym dniu, wybranego typu "
-              "albo dopasować trening do Twoich wymagań ;)\n"
-              "Serdecznie zapraszam do dialogu!")
+        print(self.HELLO_STRING)
         running = True
         while running:
+            # lowercase request without polish letters and punctuations
             request = unidecode(input("Powiedz coś: ").lower().translate(str.maketrans('', '', string.punctuation)))
 
             if self.is_goodbye(request):
@@ -66,10 +59,10 @@ class Bot:
             response = True
 
             if self.is_help(request):
-                self.print_help()
+                print(self.HELP_STRING)
                 response = False
 
-            if self.is_schedule(request):
+            if response and self.is_schedule(request):
                 self.db_manager.print_schedule()
                 response = False
 

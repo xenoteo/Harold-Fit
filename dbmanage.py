@@ -6,11 +6,11 @@ class DBManager:
     def __init__(self):
         self.conn = sqlite3.connect('fit.db')
         self.c = self.conn.cursor()
-        self.CLASSES_MAP = dict()      # unidecoded -> ununidecoded
+        self.CLASSES_MAP = {}       # unidecoded -> ununidecoded
         self.CLASSES_UNIDECODED = []
         self.INSTRUCTORS_MAP = {}   # unidecoded -> ununidecoded
         self.INSTRUCTORS_UNIDECODED = []
-        self.DAYS_OF_WEEK_MAP = dict()  # unidecoded -> ununidecoded
+        self.DAYS_OF_WEEK_MAP = {}  # unidecoded -> ununidecoded
         self.DAYS_OF_WEEK_UNIDECODED = []
         self.DESCRIPTIONS_MAP = {}  # unidecoded -> ununidecoded
         self.DESCRIPTIONS_UNIDECODED = []
@@ -20,44 +20,49 @@ class DBManager:
         self.set_days_of_week()
         self.set_all_descriptions()
 
+    def set_map_and_unidecoded(self, data, unidecoded, map):
+        for row in data:
+            item = row.lower()
+            item_unidecoded = unidecode(item)
+            unidecoded.append(item_unidecoded)
+            map[item_unidecoded] = item
+
+    def query_to_array(self, query):
+        self.c.execute(query)
+        result = []
+        for row in self.c.fetchall():
+            result.append(row[0])
+        return result
+
     def set_all_classes(self):
-        self.c.execute('SELECT name FROM classes')
-        for fit in self.c.fetchall():
-            unidecoded = unidecode(fit[0])
-            self.CLASSES_UNIDECODED.append(unidecoded)
-            self.CLASSES_MAP[unidecoded] = fit[0]
+        self.set_map_and_unidecoded(self.query_to_array('SELECT name FROM classes'),
+                                    self.CLASSES_UNIDECODED,
+                                    self.CLASSES_MAP)
 
     def set_all_instructors(self):
-        self.c.execute('SELECT DISTINCT instructor FROM classes')
-        for fit in self.c.fetchall():
-            instructor = fit[0].lower()
-            instructor_unidecoded = unidecode(instructor)
-            self.INSTRUCTORS_UNIDECODED.append(instructor_unidecoded)
-            self.INSTRUCTORS_MAP[instructor_unidecoded] = instructor
+        self.set_map_and_unidecoded(self.query_to_array('SELECT DISTINCT instructor FROM classes'),
+                                    self.INSTRUCTORS_UNIDECODED,
+                                    self.INSTRUCTORS_MAP)
 
     def set_days_of_week(self):
         days_of_week = ["poniedziałek", "wtorek", "środa", "czwartek", "piątek", "sobota", "niedziela"]
-        for day in days_of_week:
-            unidecoded = unidecode(day)
-            self.DAYS_OF_WEEK_UNIDECODED.append(unidecoded)
-            self.DAYS_OF_WEEK_MAP[unidecoded] = day
+        self.set_map_and_unidecoded(days_of_week, self.DAYS_OF_WEEK_UNIDECODED, self.DAYS_OF_WEEK_MAP)
 
     def set_all_descriptions(self):
-        self.c.execute('SELECT DISTINCT description FROM classes')
-        for fit in self.c.fetchall():
-            description = fit[0].lower()
-            unidecoded = unidecode(description)
-            self.DESCRIPTIONS_UNIDECODED.append(unidecoded)
-            self.DESCRIPTIONS_MAP[unidecoded] = description
+        self.set_map_and_unidecoded(self.query_to_array('SELECT DISTINCT description FROM classes'),
+                                    self.DESCRIPTIONS_UNIDECODED,
+                                    self.DESCRIPTIONS_MAP)
+
+    def print_fetched_data(self, data, output=""):
+        for row in data:
+            output += f"{row[2]}:00-{row[2]}:50 {row[1].ljust(15)} {row[0].ljust(20)} {row[3].ljust(20)} {row[4]}\n"
+        print(output, end="")
 
     def check_days(self, request):
         for day in self.DAYS_OF_WEEK_UNIDECODED:
             if request.__contains__(day):
                 self.c.execute('SELECT * FROM classes WHERE day=?', (self.DAYS_OF_WEEK_MAP[day],))
-                output = ""
-                for fit in self.c.fetchall():
-                    output += f"{fit[2]}:00-{fit[2]}:50 {fit[0]}\n"
-                print(output, end="")
+                self.print_fetched_data(self.c.fetchall())
                 return True
         return False
 
@@ -65,11 +70,9 @@ class DBManager:
         for training in self.CLASSES_UNIDECODED:
             if request.__contains__(training):
                 self.c.execute('SELECT description FROM classes WHERE name=?', (self.CLASSES_MAP[training],))
-                output = f"{training} to {self.c.fetchone()[0]}. Zajęcia odbywają się:\n"
+                output = f"{training.capitalize()} to {self.c.fetchone()[0]}. Zajęcia odbywają się:\n"
                 self.c.execute('SELECT * FROM classes WHERE name=?', (self.CLASSES_MAP[training],))
-                for fit in self.c.fetchall():
-                    output += f"{fit[2]}:00-{fit[2]}:50 {fit[1]}\n"
-                print(output, end="")
+                self.print_fetched_data(self.c.fetchall(), output)
                 return True
         return False
 
@@ -77,19 +80,9 @@ class DBManager:
         for instructor in self.INSTRUCTORS_UNIDECODED:
             if request.__contains__(instructor):
                 self.c.execute('SELECT * FROM classes WHERE instructor=?', (self.INSTRUCTORS_MAP[instructor],))
-                output = ""
-                for fit in self.c.fetchall():
-                    output += f"{fit[2]}:00-{fit[2]}:50 {fit[1].ljust(15)} {fit[0].ljust(20)}\n"
-                print(output, end="")
+                self.print_fetched_data(self.c.fetchall())
                 return True
         return False
-
-    def print_trainings_with_description(self, description):
-        self.c.execute('SELECT * FROM classes WHERE description=?', (description,))
-        output = ""
-        for fit in self.c.fetchall():
-            output += f"{fit[2]}:00-{fit[2]}:50 {fit[1].ljust(15)} {fit[0].ljust(20)} {fit[4]}\n"
-        print(output, end="")
 
     def check_descriptions(self, request):
         founded = False
@@ -97,16 +90,15 @@ class DBManager:
             if word != 'trening' and word != 'zajecia' and len(word) > 2:
                 for description in self.DESCRIPTIONS_UNIDECODED:
                     if description.__contains__(word):
-                        self.print_trainings_with_description(self.DESCRIPTIONS_MAP[description])
+                        self.c.execute('SELECT * FROM classes WHERE description=?',
+                                       (self.DESCRIPTIONS_MAP[description],))
+                        self.print_fetched_data(self.c.fetchall())
                         founded = True
         return founded
 
     def print_schedule(self):
         self.c.execute('SELECT * FROM classes ORDER BY id')
-        output = ""
-        for fit in self.c.fetchall():
-            output += f"{fit[2]}:00-{fit[2]}:50 {fit[1].ljust(15)} {fit[0].ljust(20)} {fit[3].ljust(20)} {fit[4]}\n"
-        print(output, end="")
+        self.print_fetched_data(self.c.fetchall())
 
     def close_connection(self):
         self.conn.close()
