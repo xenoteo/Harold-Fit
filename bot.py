@@ -82,7 +82,7 @@ class Bot:
         running = True
         while running:
             # lowercase request without polish letters and punctuations
-            request = unidecode(input("Powiedz coś: ").lower().translate(str.maketrans('', '', string.punctuation)))
+            request = unidecode(input("\033[92mPowiedz coś: \033[0m").lower().translate(str.maketrans('', '', string.punctuation)))
 
             if self.is_goodbye(request):
                 running = False
