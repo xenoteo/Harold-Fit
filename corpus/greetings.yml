@@ -1,17 +1,21 @@
 categories:
   - greetings
 conversations:
-  - - Cześć
+  - - czesc
     - Cześć!
-  - - Czesc
+  - - czesc,
     - Cześć!
-  - - Siema
+  - - czesc!
     - Cześć!
-  - - Hej
+  - - czesc.
     - Cześć!
-  - - Hejka
+  - - siema
+    - Cześć!
+  - - hej
+    - Cześć!
+  - - hejka
     - Witam!
-  - - Dzień dobry
+  - - dzien dobry
     - Witam!
-  - - Witam
+  - - witam
     - Dzień dobry!
