@@ -2,4 +2,5 @@
 Fitness club chat bot.
 
 ## Requirements
-`pip3 install chatterbot`
+`pip install chatterbot`  
+`pip install unicode`
