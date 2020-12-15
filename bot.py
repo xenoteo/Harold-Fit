@@ -20,7 +20,7 @@ class Bot:
         self.HELP_STRING = "Nazywam się Harold Fit i mam przyjemność pomagać klientom z harmonogramem zajęć fitnesowych :)\n" \
                            "Między innymi mogę znaleźć zajęcia wybranego instruktora, w wybranym dniu, wybranego typu " \
                            "albo dopasować trening do Twoich wymagań ;)"
-        self.chatbot = ChatBot('Harold Fit', database_uri='sqlite:///fit.db')
+        self.chatbot = ChatBot('Harold Fit')
         self.train()
         self.db_manager = db.DBManager()
 

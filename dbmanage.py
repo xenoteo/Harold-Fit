@@ -163,7 +163,7 @@ class DBManager:
     def print_schedule(self):
         """ A function getting all the schedule from the database and printing it. """
 
-        self.c.execute('SELECT * FROM classes ORDER BY id')
+        self.c.execute('SELECT * FROM classes')
         self.print_fetched_data(self.c.fetchall())
 
     def close_connection(self):
